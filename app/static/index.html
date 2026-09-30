@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>热柜鲜食 · 出炉与效期报损</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">♨</span> 热柜鲜食台 <small>出炉 · 效期 · 报损</small></div>
+  <div class="clock">
+    <span id="sim-clock">--:--</span>
+    <span class="role-switch">
+      身份
+      <select id="role">
+        <option value="clerk">当班店员</option>
+        <option value="manager">值班店长</option>
+      </select>
+    </span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="batches" class="active">制作批次</button>
+  <button data-tab="cabinet">热柜陈列图</button>
+  <button data-tab="expiry">效期队列</button>
+  <button data-tab="temps">温度记录</button>
+  <button data-tab="sales">销售差异</button>
+  <button data-tab="pull">下架清点 <em id="pull-badge" class="badge hidden">0</em></button>
+  <button data-tab="report">日报</button>
+</nav>
+
+<main>
+  <!-- 制作批次 -->
+  <section id="tab-batches" class="tab active">
+    <div class="card">
+      <h2>出炉登记</h2>
+      <form id="form-make" class="row-form">
+        <select name="product_id" id="make-product"></select>
+        <input type="number" name="qty" min="1" value="10" style="width:90px"> 份
+        <button class="btn primary" type="submit">记录出炉</button>
+        <span class="hint">出炉后先抽检温度,合格才能分配层位</span>
+      </form>
+    </div>
+    <div id="batch-list" class="grid-list"></div>
+  </section>
+
+  <!-- 热柜陈列图 -->
+  <section id="tab-cabinet" class="tab">
+    <div class="card cabinet-card">
+      <div class="cabinet-head"><h2>1号热柜</h2><span class="hint">横向为实际层板 · 上层到下层</span></div>
+      <div id="cabinet"></div>
+    </div>
+  </section>
+
+  <!-- 效期队列 -->
+  <section id="tab-expiry" class="tab">
+    <div class="card">
+      <h2>临期队列 <span class="hint">按到期分钟升序 · 不闪烁</span></h2>
+      <div id="expiry-list"></div>
+    </div>
+  </section>
+
+  <!-- 温度记录 -->
+  <section id="tab-temps" class="tab">
+    <div class="card"><h2>温度记录 <span class="hint">抽检 + 传感器持续读数</span></h2>
+      <div class="table-wrap"><table id="temp-table">
+        <thead><tr><th>时间</th><th>批次</th><th>商品</th><th>温度</th><th>来源</th><th>结果</th><th>备注</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- 销售差异 -->
+  <section id="tab-sales" class="tab">
+    <div class="card"><h2>销售流水</h2>
+      <div class="table-wrap"><table id="sales-table">
+        <thead><tr><th>时间</th><th>批次</th><th>商品</th><th>份数</th><th>成交价</th><th>回执号</th><th>经手</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+    <div class="card"><h2>留痕事件 <span class="hint">数量差异 / 错层 / 缺失 / 售罄等</span></h2>
+      <div id="event-list"></div>
+    </div>
+  </section>
+
+  <!-- 下架清点 -->
+  <section id="tab-pull" class="tab">
+    <div class="card">
+      <h2>闭店操作</h2>
+      <form id="form-close" class="row-form">
+        <button class="btn danger" type="submit">闭店:在柜批次全部转待下架</button>
+        <span class="hint">剩余份数转闭店剩余,逐批清点后报损</span>
+      </form>
+    </div>
+    <div id="pull-list"></div>
+  </section>
+
+  <!-- 日报 -->
+  <section id="tab-report" class="tab">
+    <div class="card">
+      <h2>营业日报 <span class="hint">近 24 模拟小时</span></h2>
+      <div id="report-kpis" class="kpis"></div>
+      <div id="report-detail"></div>
+    </div>
+  </section>
+</main>
+
+<!-- 批次操作弹层 -->
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="modal-cancel">取消</button>
+      <button class="btn primary" id="modal-ok">确认</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/app.js"></script>
+</body>
+</html>
