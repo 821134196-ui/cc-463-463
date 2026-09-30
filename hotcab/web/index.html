@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>热柜鲜食效期与报损 · 463 号店</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">热</span>
+    <div>
+      <h1>热柜鲜食 · 出炉效期与报损</h1>
+      <div class="store-name" id="storeName">463 号示范便利店</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <div class="clock" id="clock">--:--:--</div>
+    <label class="role-box">当班
+      <select id="roleSelect" aria-label="切换当班身份"></select>
+    </label>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="batches" class="tab active">制作批次</button>
+  <button data-view="cabinet" class="tab">热柜陈列图</button>
+  <button data-view="queue" class="tab">效期队列</button>
+  <button data-view="temps" class="tab">温度记录</button>
+  <button data-view="sales" class="tab">销售差异</button>
+  <button data-view="count" class="tab">下架清点</button>
+  <button data-view="report" class="tab">日报</button>
+</nav>
+
+<main id="main">
+  <!-- 制作批次 -->
+  <section id="view-batches" class="view active">
+    <div class="card create-card">
+      <h2>出炉登记</h2>
+      <form id="createForm" class="inline-form">
+        <label>鲜食商品 <select id="newProduct" required></select></label>
+        <label>出炉数量（份）<input id="newQty" type="number" min="1" value="10" required></label>
+        <button class="btn primary" type="submit">记录出炉批次</button>
+        <span class="hint">出炉后须先记录抽检温度，温度合格才能分配层位开始计时。</span>
+      </form>
+    </div>
+    <div id="batchList" class="batch-list"></div>
+  </section>
+
+  <!-- 热柜陈列图 -->
+  <section id="view-cabinet" class="view">
+    <div class="card">
+      <h2>前台热柜 HC-01 · 实时陈列</h2>
+      <p class="hint">层板按实际位置横排陈列；每个批次显示剩余份数与距到期分钟。临期批次以番茄红描边提示（不闪烁）。</p>
+      <div id="cabinetMap" class="cabinet-map"></div>
+    </div>
+  </section>
+
+  <!-- 效期队列 -->
+  <section id="view-queue" class="view">
+    <div class="card">
+      <h2>效期队列 <span class="sub">按到期紧迫度从紧到松</span></h2>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead><tr>
+            <th>紧迫度</th><th>批次</th><th>商品</th><th>层位</th>
+            <th class="num">剩余</th><th class="num">到期</th>
+            <th class="num">现价</th><th>降价 / 销售 / 下架</th>
+          </tr></thead>
+          <tbody id="queueBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 温度记录 -->
+  <section id="view-temps" class="view">
+    <div class="card">
+      <h2>温度记录</h2>
+      <div class="inline-form">
+        <label>选择批次 <select id="tempBatchSelect"></select></label>
+        <span id="tempMeta" class="hint"></span>
+      </div>
+      <div id="tempChart" class="chart"></div>
+      <div class="table-wrap">
+        <table class="grid compact">
+          <thead><tr><th>时间</th><th>来源</th><th class="num">读数</th><th>判定</th><th>备注</th></tr></thead>
+          <tbody id="tempTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 销售差异 -->
+  <section id="view-sales" class="view">
+    <div class="grid-2">
+      <div class="card">
+        <h2>销售回执（按批次扣减）</h2>
+        <div class="table-wrap">
+          <table class="grid compact">
+            <thead><tr><th>时间</th><th>批次</th><th>商品</th><th class="num">份数</th><th class="num">单价</th><th class="num">金额</th><th>来源</th></tr></thead>
+            <tbody id="salesBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>差异留痕</h2>
+        <p class="hint">提前售罄、账实数量差异、误下架撤销等事件。</p>
+        <ul id="diffTrail" class="trail"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 下架清点 -->
+  <section id="view-count" class="view">
+    <div class="card">
+      <h2>待下架 · 闭店清点</h2>
+      <div class="count-actions">
+        <span class="hint">到期或温度持续不合格的批次自动转入；店员清点份数后确认报损，报损不可逆。</span>
+        <button class="btn danger ghost" id="closeStoreBtn">执行闭店（剩余批次全部下架）</button>
+      </div>
+      <div id="pendingList" class="pending-list"></div>
+    </div>
+  </section>
+
+  <!-- 日报 -->
+  <section id="view-report" class="view">
+    <div class="card">
+      <h2 id="reportTitle">门店日报</h2>
+      <div id="reportStats" class="stat-row"></div>
+      <div class="grid-2">
+        <div>
+          <h3>报损明细</h3>
+          <div class="table-wrap">
+            <table class="grid compact">
+              <thead><tr><th>时间</th><th>批次</th><th>商品</th><th class="num">报损份数</th><th>原因</th><th>确认人</th></tr></thead>
+              <tbody id="reportLossBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3>批次状态与事件计数</h3>
+          <div id="reportEventCounts" class="event-counts"></div>
+        </div>
+      </div>
+      <h3>全日留痕</h3>
+      <ul id="auditTrail" class="trail"></ul>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="modalBackdrop" class="modal-backdrop hidden">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">取消</button>
+      <button class="btn primary" id="modalOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
